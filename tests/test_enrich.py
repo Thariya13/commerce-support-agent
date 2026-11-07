@@ -12,6 +12,8 @@ from shopassist.catalog.enrich import (
     parse_price,
     record_to_product,
 )
+from shopassist.catalog.repository import SAMPLE_CATALOG
+from shopassist.catalog.sample import build_sample_catalog
 
 
 @pytest.mark.parametrize(
@@ -108,3 +110,9 @@ def test_third_party_injection_is_stripped_and_flagged():
     )
     assert product.flagged_text
     assert "ignore" not in product.description.lower() and "Great boot." in product.description
+
+
+def test_packaged_sample_catalog_matches_generator():
+    packaged = [json.loads(line) for line in SAMPLE_CATALOG.read_text(encoding="utf-8").splitlines()]
+    generated = [json.loads(p.model_dump_json()) for p in build_sample_catalog()]
+    assert packaged == generated, "run: python -m shopassist.catalog.sample"
